@@ -3,7 +3,7 @@
 const libingester = require('libingester');
 const mustache = require('mustache');
 const rp = require('request-promise');
-const template = require('./template');
+const template = require('./template_quote');
 const url = require('url');
 
 const home_page = 'http://www.thefreedictionary.com/_/archive.htm'; // Home section
@@ -37,7 +37,7 @@ function ingest_article_profile(hatch, uri) {
         const wordOfDayDef = wordOfDayMixedString.split(" ").slice(1).join(" ");
 
         // Pluck wordOfDayType
-        const pos = mixedString.split(" ")[0];
+        const pos = wordOfDayMixedString.split(" ")[0];
         const wordOfDayType = pos.substr(1, pos.length-2);
 
         // Pluck quoteText
@@ -90,7 +90,6 @@ function ingest_article_profile(hatch, uri) {
             todaysHolidayYear: todaysHolidayYearFinal
 
         });
-
         asset.set_document(content);
         hatch.save_asset(asset);
     });
@@ -101,12 +100,11 @@ function main() {
     // make request to the index (home) page
     libingester.util.fetch_html(home_page).then(($pages) => {
         // retrieve all the URLs for individual pages
-        const articles_links = $pages('#Calendar a:nth-child(-n + 200)').map(function() {
+        // const articles_links = $pages('#Calendar a:nth-child(-n + 200)').map(function() {
+        const articles_links = $pages('#Calendar > div:nth-child(1) > table > tbody > tr:nth-child(5) > td:nth-child(7) > a').map(function() {
             const uri = $pages(this).attr('href');
-            // resolve URI with main URL
             return url.resolve(home_page, uri);
         }).get();
-
 
         Promise.all(articles_links.map((uri) => ingest_article_profile(hatch, uri))).then(() => {
             return hatch.finish();

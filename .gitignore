@@ -3,3 +3,4 @@
 node_modules/
 hatch_*/
 npm-debug.log
+.jshintrc

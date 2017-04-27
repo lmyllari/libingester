@@ -24,8 +24,8 @@ function ingest_article_profile(hatch, uri) {
         asset.set_section("Article");
 
         //Set title section
-        const title = $profile('h1').first().text();
         const date = parts.query.d;
+        const title = $profile('h1').first().text() + ": " + date;
 
         asset.set_title(title);
 
@@ -48,7 +48,12 @@ function ingest_article_profile(hatch, uri) {
 
         // Pluck dayInHistoryYearFinal
         const dayInHistoryBlob = $profile('tr:contains("This Day in History")').next().text();
+        if(dayInHistoryBlob == "undefined"){
+          let dayInHistoryBlob = "";
+        }
         const reHistory = /\(([0-9]){4}\)/g;
+        console.log("dayInHistoryBlob: " + dayInHistoryBlob + " date: " + date);
+
         const dayInHistoryYear = reHistory.exec(dayInHistoryBlob)[0];
         const dayInHistoryYearFinal = dayInHistoryYear.slice(1,5);
 
@@ -70,6 +75,9 @@ function ingest_article_profile(hatch, uri) {
         let todaysHolidayBody = todaysHolidayBlob.split(todaysHolidayYear)[1];
         todaysHolidayBody = todaysHolidayBody.split("\tMore...")[0];
 
+        const dataObject = {
+
+        }
 
         const content = mustache.render(template.structure_template, {
             title: title,
@@ -100,13 +108,13 @@ function main() {
     // make request to the index (home) page
     libingester.util.fetch_html(home_page).then(($pages) => {
         // retrieve all the URLs for individual pages
-        // const articles_links = $pages('#Calendar a:nth-child(-n + 200)').map(function() {
-        const articles_links = $pages('#Calendar > div:nth-child(1) > table > tbody > tr:nth-child(5) > td:nth-child(7) > a').map(function() {
+        const articles_links = $pages('#Calendar div:nth-child(-2n+2) a').map(function() {
             const uri = $pages(this).attr('href');
             return url.resolve(home_page, uri);
         }).get();
 
-        Promise.all(articles_links.map((uri) => ingest_article_profile(hatch, uri))).then(() => {
+        Promise.all(articles_links.map((uri) => ingest_article_profile(hatch, uri)))
+        .catch(err => console.log(err.stack)).then(() => {
             return hatch.finish();
         });
     });

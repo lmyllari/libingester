@@ -48,12 +48,14 @@ function ingest_article_profile(hatch, uri) {
 
         // Pluck dayInHistoryYearFinal
         const dayInHistoryBlob = $profile('tr:contains("This Day in History")').next().text();
+
+        // Set dayInHistoryBlob to undefined if given article does not have it
         if(dayInHistoryBlob == "undefined"){
           let dayInHistoryBlob = "";
         }
-        const reHistory = /\(([0-9]){4}\)/g;
-        console.log("dayInHistoryBlob: " + dayInHistoryBlob + " date: " + date);
 
+        const reHistory = /\(([0-9]){4}\)/g;
+        // console.log("dayInHistoryBlob: " + dayInHistoryBlob + " date: " + date);
         const dayInHistoryYear = reHistory.exec(dayInHistoryBlob)[0];
         const dayInHistoryYearFinal = dayInHistoryYear.slice(1,5);
 
@@ -65,7 +67,7 @@ function ingest_article_profile(hatch, uri) {
         dayInHistoryBody = dayInHistoryBody.split("\tMore...")[0];
 
         // Pluck todaysHolidayYearFinal
-        const todaysHolidayBlob = $profile('tr:contains("This Day in History")').next().text();
+        const todaysHolidayBlob = $profile('tr:contains("Today\'s Holiday")').next().text();
         const reHoliday = /\(([0-9]){4}\)/g;
         const todaysHolidayYear = reHoliday.exec(todaysHolidayBlob)[0];
         const todaysHolidayYearFinal = todaysHolidayYear.slice(1,5);
@@ -74,10 +76,6 @@ function ingest_article_profile(hatch, uri) {
         const todaysHolidayHead = todaysHolidayBlob.split(todaysHolidayYear)[0];
         let todaysHolidayBody = todaysHolidayBlob.split(todaysHolidayYear)[1];
         todaysHolidayBody = todaysHolidayBody.split("\tMore...")[0];
-
-        const dataObject = {
-
-        }
 
         const content = mustache.render(template.structure_template, {
             title: title,
@@ -95,8 +93,9 @@ function ingest_article_profile(hatch, uri) {
             dayInHistoryYear: dayInHistoryYearFinal,
 
             todaysHolidayHead: todaysHolidayHead,
-            todaysHolidayYear: todaysHolidayYearFinal
+            todaysHolidayBody: todaysHolidayBody,
 
+            sourceURL: uri
         });
         asset.set_document(content);
         hatch.save_asset(asset);

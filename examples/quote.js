@@ -36,6 +36,8 @@ function ingest_article_profile(hatch, uri) {
         const wordOfDayMixedString = $profile('td:contains("Definition:")').next().text();
         const wordOfDayDef = wordOfDayMixedString.split(" ").slice(1).join(" ");
 
+        asset.set_synopsis(wordOfDayDef);
+
         // Pluck wordOfDayType
         const pos = wordOfDayMixedString.split(" ")[0];
         const wordOfDayType = pos.substr(1, pos.length-2);
@@ -108,6 +110,7 @@ function main() {
     libingester.util.fetch_html(home_page).then(($pages) => {
         // retrieve all the URLs for individual pages
         const articles_links = $pages('#Calendar div:nth-child(-2n+2) a').map(function() {
+        // const articles_links = $pages('#Calendar div:nth-child(-n+15) a').map(function() {
             const uri = $pages(this).attr('href');
             return url.resolve(home_page, uri);
         }).get();
